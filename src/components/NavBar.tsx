@@ -32,6 +32,7 @@ export default function Navbar() {
     { label: "Registrácia", value: "/auth/registracia", icon: <AppRegistrationIcon /> },
     { label: "Prihlásenie", value: "/auth/prihlasenie", icon: <LoginIcon /> }
   ];
+  
 
   // Authenticated navigation paths
   const authPaths = [
