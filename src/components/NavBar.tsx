@@ -6,7 +6,6 @@ import {
   BottomNavigationAction,
   Box,
   Avatar,
-  IconButton,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
@@ -23,7 +22,7 @@ import { useColorMode } from "./ThemeProvider";
 const Navbar = () => {
   const { toggleColorMode, mode } = useColorMode();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   const handleNavigation = (event: React.SyntheticEvent, newValue: string) => {
     router.push(newValue);
