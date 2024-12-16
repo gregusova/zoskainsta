@@ -49,7 +49,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       MuiBottomNavigation: {
         styleOverrides: {
           root: {
-            backgroundColor: mode === "light" ? 'violet' : '#424242', // Violet in light mode, gray in dark mode
+            backgroundColor: mode === "light" ? '#d8d2e3' : '#424242', // Violet in light mode, gray in dark mode
           },
         },
       },
