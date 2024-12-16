@@ -2,6 +2,7 @@
 
 "use client";
 
+import React, { useState } from 'react';
 import {
   Button,
   Container,
@@ -11,6 +12,12 @@ import { signIn } from "next-auth/react";
 import GoogleIcon from "@mui/icons-material/Google";
 
 export default function SignUpView() {
+  const [agreed, setAgreed] = useState(false);
+
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAgreed(event.target.checked);
+  };
+
   return (
     <Container
       maxWidth="xs"
@@ -32,9 +39,21 @@ export default function SignUpView() {
 
       {/* Sign-in link */}
       <Typography variant="body1" sx={{ mb: 6 }}>
-        Už máte účet? <a href="/auth/prihlasenie">Prihláste sa</a>
+        Already have an account? <a href="/auth/prihlasenie">Sign In</a>
       </Typography>
-
+      
+      <div style={{ marginBottom: '16px' }}>
+        <input
+          type="checkbox"
+          id="gdpr"
+          checked={agreed}
+          onChange={handleCheckboxChange}
+        />
+        <label htmlFor="gdpr">
+          I agree with <a href="/gdpr">GDPR</a> and <a href="/podmienky">terms of use</a>
+        </label>
+      </div>
+      
       {/* Google Sign Up */}
       <Button
         variant="outlined"
@@ -45,9 +64,6 @@ export default function SignUpView() {
       >
         Registrovať sa účtom Google
       </Button>
-
-
     </Container>
   );
 }
-

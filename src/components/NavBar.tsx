@@ -30,8 +30,6 @@ const Navbar = () => {
 
   const nonAuthPaths = [
     { label: "Domov", value: "/", icon: <HomeIcon /> },
-    { label: "Podmienky", value: "/podmienky", icon: <AddCircleIcon /> },
-    { label: "GDPR", value: "/gdpr", icon: <HomeIcon /> },
     { label: "O-nas", value: "/o-nas", icon: <HomeIcon /> },
     { label: "Registrácia", value: "/auth/registracia", icon: <AppRegistrationIcon /> },
     { label: "Prihlásenie", value: "/auth/prihlasenie", icon: <LoginIcon /> },
