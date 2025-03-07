@@ -4,10 +4,12 @@ export const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#1976d2", // Blue for light mode
+      main: "#7B1FA2", // Deep purple
+      light: "#9C27B0", // Lighter purple
+      dark: "#4A148C", // Darker purple
     },
     secondary: {
-      main: "#ff4081",
+      main: "#FF4081",
     },
     background: {
       default: "#f5f5f5",
@@ -27,10 +29,12 @@ export const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#d32f2f", // Red for dark mode
+      main: "#FFB74D", // Peach
+      light: "#FFCC80", // Lighter peach
+      dark: "#F57C00", // Darker peach
     },
     secondary: {
-      main: "#ff4081",
+      main: "#FF4081",
     },
     background: {
       default: "#121212",

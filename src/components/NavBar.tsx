@@ -64,7 +64,7 @@ export default function Navbar() {
 
   const handleProfileClick = () => {
     handleMenuClose();
-    router.push("/profile");
+    router.push("/profil");
   };
 
   const handleLogoutClick = async () => {
@@ -99,7 +99,7 @@ export default function Navbar() {
     { label: "Pridať", value: "/pridat", icon: <AddCircleIcon /> },
     {
       label: "Profil",
-      value: "/profile",
+      value: "",
       icon: (
         <IconButton
           onClick={handleProfileMenuOpen}
