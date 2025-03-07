@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import TextField from "@mui/material/TextField";
-import { Box, Avatar, CircularProgress, List, ListItem, ListItemAvatar, ListItemText, Divider } from "@mui/material";
+import { Box, Avatar, CircularProgress, List, ListItemAvatar, ListItemText, Divider, ListItemButton } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
 // Define TypeScript types
@@ -90,8 +90,7 @@ export default function Find() {
         <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
           {users.map((user, index) => (
             <React.Fragment key={user.id}>
-              <ListItem 
-                button 
+              <ListItemButton
                 sx={{ 
                   py: 2,
                   '&:hover': {
@@ -117,7 +116,7 @@ export default function Find() {
                       <Typography variant="body2" color="text.secondary">
                         {user.profile?.location || "Neznáma lokalita"}
                       </Typography>
-                      {user.profile?.interests?.length > 0 && (
+                      {user.profile?.interests && user.profile.interests.length > 0 && (
                         <Typography variant="caption" color="text.secondary">
                           {user.profile.interests.join(" • ")}
                         </Typography>
@@ -125,7 +124,7 @@ export default function Find() {
                     </Box>
                   }
                 />
-              </ListItem>
+              </ListItemButton>
               {index < users.length - 1 && <Divider />}
             </React.Fragment>
           ))}
