@@ -10,13 +10,13 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.7.4",
+    "@auth/prisma-adapter": "^2.8.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fontsource/roboto": "^5.1.0",
     "@mui/icons-material": "^6.1.0",
     "@mui/material": "^6.1.1",
-    "@prisma/client": "^6.3.1",
+    "@prisma/client": "^6.4.1",
     "i": "^0.3.7",
     "next": "^14.2.23",
     "next-auth": "^4.24.7",
@@ -29,7 +29,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.11",
-    "prisma": "^6.3.1",
+    "prisma": "^6.4.1",
     "typescript": "^5"
   }
 }
