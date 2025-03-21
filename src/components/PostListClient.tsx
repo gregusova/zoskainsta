@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Post from "@/components/Post";
 import { getPosts } from "../app/(private)/prispevok/actions";
-import { useSession } from "next-auth/react";
 
 type PostFromServer = {
   id: string;
@@ -25,7 +24,6 @@ type PostType = PostFromServer;
 
 const PostListClient: React.FC = () => {
   const [posts, setPosts] = useState<PostType[]>([]);
-  const { data: session } = useSession();
 
   useEffect(() => {
     async function fetchPosts() {

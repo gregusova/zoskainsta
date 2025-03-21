@@ -39,11 +39,6 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
   const [showAllComments, setShowAllComments] = useState(false);
   const [openCommentsDialog, setOpenCommentsDialog] = useState(false);
 
-  useEffect(() => {
-    fetchComments();
-    fetchLikeStatus();
-  }, []);
-
   const fetchLikeStatus = async () => {
     try {
       const response = await fetch(`/api/posts/${id}/like/status`);
@@ -65,6 +60,11 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
       console.error('Error fetching comments:', error);
     }
   };
+
+  useEffect(() => {
+    fetchComments();
+    fetchLikeStatus();
+  }, [id]);
 
   const handleLike = async () => {
     try {
