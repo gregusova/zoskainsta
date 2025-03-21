@@ -32,6 +32,7 @@ export default async function PostsList() {
         {posts.map((post: Post) => (
           <Post
             key={post.id}
+            id={post.id}
             username={post.user.name || "Anonymous"}
             profilePicture={post.user.image || undefined}
             imageUrl={post.imageUrl}
