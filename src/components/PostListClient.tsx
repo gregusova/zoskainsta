@@ -4,7 +4,7 @@ import Container from "@mui/material/Container";
 import Post from "@/components/Post";
 import { getPosts } from "../app/(private)/prispevok/actions";
 
-type PostFromServer = {
+interface PostFromServer {
   id: string;
   userId: string;
   imageUrl: string;
@@ -18,17 +18,31 @@ type PostFromServer = {
   likes: number;
   comments: number;
   isLiked: boolean;
-};
+}
 
-type PostType = PostFromServer;
+interface PostResponse {
+  id: string;
+  userId: string;
+  imageUrl: string;
+  caption: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user: {
+    name: string | null;
+    image: string | null;
+  };
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+}
 
-const PostListClient: React.FC = () => {
-  const [posts, setPosts] = useState<PostType[]>([]);
+const PostListClient = () => {
+  const [posts, setPosts] = useState<PostFromServer[]>([]);
 
   useEffect(() => {
     async function fetchPosts() {
-      const posts = await getPosts();
-      const formattedPosts = posts.map(post => ({
+      const fetchedPosts = await getPosts();
+      const formattedPosts = fetchedPosts.map((post: PostResponse) => ({
         ...post,
         likes: post.likes || 0,
         comments: post.comments || 0,
@@ -39,28 +53,6 @@ const PostListClient: React.FC = () => {
     fetchPosts();
   }, []);
 
-  const handleLike = async (postId: string) => {
-    await fetch(`/posts/${postId}/like`, { method: 'POST' });
-    // Update the UI accordingly
-    setPosts(posts.map(post => post.id === postId ? { ...post, likes: post.likes + 1 } : post));
-  };
-
-  const handleAddComment = async (postId: string, content: string) => {
-    await fetch(`/posts/${postId}/comment`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
-    });
-    // Update the UI accordingly
-    setPosts(posts.map(post => post.id === postId ? { ...post, comments: post.comments + 1 } : post));
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    await fetch(`/posts/comment/${commentId}`, { method: 'DELETE' });
-    // Update the UI accordingly
-    // This is a simplified example, you might need to adjust it based on your actual data structure
-  };
-
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Box sx={{ 
@@ -68,7 +60,7 @@ const PostListClient: React.FC = () => {
         flexDirection: 'column',
         gap: 3
       }}>
-        {posts.map((post: PostType) => (
+        {posts.map((post) => (
           <Post
             key={post.id}
             id={post.id}
@@ -78,9 +70,6 @@ const PostListClient: React.FC = () => {
             likes={post.likes}
             comments={post.comments}
             isLiked={post.isLiked}
-            onLike={() => handleLike(post.id)}
-            onAddComment={(content: string) => handleAddComment(post.id, content)}
-            onDeleteComment={handleDeleteComment}
           />
         ))}
       </Box>

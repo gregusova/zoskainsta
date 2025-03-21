@@ -6,7 +6,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
 interface Comment {
@@ -36,10 +36,9 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
   const [commentCount, setCommentCount] = useState(comments);
   const [postComments, setPostComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
-  const [showAllComments, setShowAllComments] = useState(false);
   const [openCommentsDialog, setOpenCommentsDialog] = useState(false);
 
-  const fetchLikeStatus = async () => {
+  const fetchLikeStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/posts/${id}/like/status`);
       const data = await response.json();
@@ -48,9 +47,9 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
     } catch (error) {
       console.error('Error fetching like status:', error);
     }
-  };
+  }, [id]);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/posts/${id}/comments`);
       const data = await response.json();
@@ -59,12 +58,12 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchComments();
     fetchLikeStatus();
-  }, [id]);
+  }, [fetchComments, fetchLikeStatus]);
 
   const handleLike = async () => {
     try {

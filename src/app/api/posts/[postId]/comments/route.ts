@@ -105,6 +105,7 @@ export async function DELETE(
       where: {
         id: commentId,
         userId: user.id,
+        postId: params.postId,
       },
     });
 

@@ -1,68 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-
-export async function POST(
-  request: Request,
-  { params }: { params: { postId: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Check if like already exists
-    const existingLike = await prisma.like.findFirst({
-      where: {
-        userId: user.id,
-        postId: params.postId,
-      },
-    });
-
-    if (existingLike) {
-      // Unlike the post
-      await prisma.like.delete({
-        where: {
-          id: existingLike.id,
-        },
-      });
-      await prisma.post.update({
-        where: { id: params.postId },
-        data: { likes: { decrement: 1 } },
-      });
-      return NextResponse.json({ liked: false });
-    } else {
-      // Like the post
-      await prisma.like.create({
-        data: {
-          userId: user.id,
-          postId: params.postId,
-        },
-      });
-      await prisma.post.update({
-        where: { id: params.postId },
-        data: { likes: { increment: 1 } },
-      });
-      return NextResponse.json({ liked: true });
-    }
-  } catch (error) {
-    console.error("Error handling like:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function GET(
   request: Request,
@@ -71,7 +10,7 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ isLiked: false, likeCount: 0 });
     }
 
     const user = await prisma.user.findUnique({
@@ -79,10 +18,9 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ isLiked: false, likeCount: 0 });
     }
 
-    // Check if user has liked the post
     const like = await prisma.like.findFirst({
       where: {
         userId: user.id,
@@ -90,21 +28,62 @@ export async function GET(
       },
     });
 
-    // Get total likes count
-    const post = await prisma.post.findUnique({
-      where: { id: params.postId },
-      select: { likes: true },
+    const likeCount = await prisma.like.count({
+      where: {
+        postId: params.postId,
+      },
     });
 
-    return NextResponse.json({
-      liked: !!like,
-      likesCount: post?.likes || 0,
-    });
+    return NextResponse.json({ isLiked: !!like, likeCount });
   } catch (error) {
-    console.error("Error getting like status:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("[GET_LIKE_STATUS]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: { postId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return new NextResponse("User not found", { status: 404 });
+    }
+
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        userId: user.id,
+        postId: params.postId,
+      },
+    });
+
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+      return NextResponse.json({ liked: false });
+    } else {
+      await prisma.like.create({
+        data: {
+          userId: user.id,
+          postId: params.postId,
+        },
+      });
+      return NextResponse.json({ liked: true });
+    }
+  } catch (error) {
+    console.error("[TOGGLE_LIKE]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
 } 

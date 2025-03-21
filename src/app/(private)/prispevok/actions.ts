@@ -4,6 +4,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+type Post = {
+  id: string;
+  userId: string;
+  imageUrl: string;
+  caption: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user: {
+    name: string | null;
+    image: string | null;
+  };
+  likes: { userId: string }[];
+  comments: { id: string }[];
+};
+
 export async function getPosts() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.email ? (await prisma.user.findUnique({ where: { email: session.user.email } }))?.id : null;
@@ -24,7 +39,7 @@ export async function getPosts() {
     },
   });
 
-  return posts.map(post => ({
+  return posts.map((post: Post) => ({
     ...post,
     likes: post.likes.length,
     comments: post.comments.length,
