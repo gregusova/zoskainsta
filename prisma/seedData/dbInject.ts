@@ -2,10 +2,14 @@
 
 // npx tsx prisma/seedData/dbInject.ts
 
+"use server";
+
 import fs from 'fs';
 import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+type TransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 async function seed() {
   const seedData = JSON.parse(fs.readFileSync('prisma/seedData/seed-data.json', 'utf8'));
@@ -71,8 +75,7 @@ async function seed() {
       if (item.posts && item.posts.length > 0) {
         console.log(`Creating ${item.posts.length} posts for: ${item.name}`);
         for (const post of item.posts) {
-          // Create the post with its image in a transaction
-          await prisma.$transaction(async (tx: PrismaClient) => {
+          await prisma.$transaction(async (tx: TransactionClient) => {
             // Create the post
             const createdPost = await tx.post.create({
               data: {
