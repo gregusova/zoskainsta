@@ -15,6 +15,9 @@ type Post = {
     name: string | null;
     image: string | null;
   };
+  likes: number;
+  comments: number;
+  isLiked: boolean;
 };
 
 export const metadata = { title: "Zoznam prispevkov | INSTAGRAM" };
@@ -36,8 +39,9 @@ export default async function PostsList() {
             username={post.user.name || "Anonymous"}
             profilePicture={post.user.image || undefined}
             imageUrl={post.imageUrl}
-            likes={0} // TODO: Add likes count from database
-            comments={0} // TODO: Add comments count from database
+            likes={post.likes}
+            comments={post.comments}
+            isLiked={post.isLiked}
           />
         ))}
       </Box>

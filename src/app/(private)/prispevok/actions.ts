@@ -17,6 +17,10 @@ type Post = {
   };
   likes: { userId: string }[];
   comments: { id: string }[];
+  images?: {
+    imageUrl: string;
+    order: number;
+  }[];
 };
 
 export async function getPosts() {
@@ -33,6 +37,16 @@ export async function getPosts() {
       },
       likes: true,
       comments: true,
+      images: {
+        select: {
+          imageUrl: true,
+          order: true,
+        },
+        orderBy: {
+          order: 'asc'
+        },
+        take: 1
+      },
     },
     orderBy: {
       createdAt: 'desc',
@@ -41,6 +55,7 @@ export async function getPosts() {
 
   return posts.map((post: Post) => ({
     ...post,
+    imageUrl: post.images?.[0]?.imageUrl || '',
     likes: post.likes.length,
     comments: post.comments.length,
     isLiked: userId ? post.likes.some(like => like.userId === userId) : false,

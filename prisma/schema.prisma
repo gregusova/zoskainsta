@@ -1,5 +1,5 @@
 // npx prisma format
-// npx prisma migrate dev --name init
+// npx prisma migrate dev --name nove_tabulky_pridane
 // npx prisma generate
 // npx prisma studio
 
@@ -88,7 +88,6 @@ model User {
 model Post {
   id           String         @id @default(cuid())
   userId       String
-  imageUrl     String
   caption      String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
@@ -98,6 +97,18 @@ model Post {
   Notification Notification[]
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookmarks    Bookmark[]
+  images       PostImage[]
+}
+
+model PostImage {
+  id        String   @id @default(cuid())
+  postId    String
+  imageUrl  String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
 }
 
 model Profile {

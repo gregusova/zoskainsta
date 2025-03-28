@@ -3,7 +3,7 @@
 // npx tsx prisma/seedData/dbInject.ts
 
 import fs from 'fs';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,6 @@ async function seed() {
   const users = seedData.users || [];
   const follows = seedData.follows || [];
   const likes = seedData.likes || [];
-  const commentLikes = seedData.commentLikes || [];
   const bookmarks = seedData.bookmarks || [];
 
   console.log(`Starting database seed with ${users.length} users...`);
@@ -72,66 +71,31 @@ async function seed() {
       if (item.posts && item.posts.length > 0) {
         console.log(`Creating ${item.posts.length} posts for: ${item.name}`);
         for (const post of item.posts) {
-          await prisma.post.upsert({
-            where: { id: post.id },
-            update: {
-              imageUrl: post.imageUrl,
-              caption: post.caption,
-              tags: post.tags || [],
-              updatedAt: new Date(post.updatedAt)
-            },
-            create: {
-              id: post.id,
-              userId: item.id,
-              imageUrl: post.imageUrl,
-              caption: post.caption,
-              tags: post.tags || [],
-              createdAt: new Date(post.createdAt || new Date()),
-              updatedAt: new Date(post.updatedAt)
-            }
-          });
-        }
-      }
-
-      // Create comments
-      if (item.comments && item.comments.length > 0) {
-        console.log(`Creating ${item.comments.length} comments for: ${item.name}`);
-        for (const comment of item.comments) {
-          // Check if the referenced post exists
-          try {
-            const postExists = await prisma.post.findUnique({
-              where: { id: comment.postId }
+          // Create the post with its image in a transaction
+          await prisma.$transaction(async (tx: PrismaClient) => {
+            // Create the post
+            const createdPost = await tx.post.create({
+              data: {
+                id: post.id,
+                userId: item.id,
+                caption: post.caption,
+                tags: post.tags || [],
+                createdAt: new Date(post.createdAt || new Date()),
+                updatedAt: new Date(post.updatedAt)
+              }
             });
 
-            if (postExists) {
-              await prisma.comment.upsert({
-                where: { id: comment.id },
-                update: {
-                  content: comment.content,
-                  postId: comment.postId,
-                  updatedAt: new Date(comment.updatedAt)
-                },
-                create: {
-                  id: comment.id,
-                  userId: item.id,
-                  postId: comment.postId,
-                  content: comment.content,
-                  createdAt: new Date(comment.createdAt || new Date()),
-                  updatedAt: new Date(comment.updatedAt),
-                  edited: comment.edited || false,
-                  parentId: comment.parentId || null
+            // Create the image if it exists
+            if (post.imageUrl) {
+              await tx.postImage.create({
+                data: {
+                  postId: createdPost.id,
+                  imageUrl: post.imageUrl,
+                  order: 0
                 }
               });
-            } else {
-              console.log(`Skipping comment ${comment.id} - referenced post ${comment.postId} doesn't exist`);
             }
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              console.log(`Error creating comment ${comment.id}: ${error.message}`);
-            } else {
-              console.log(`Error creating comment ${comment.id}: Unknown error occurred`);
-            }
-          }
+          });
         }
       }
     }
@@ -175,28 +139,6 @@ async function seed() {
             userId: like.userId,
             postId: like.postId,
             createdAt: new Date(like.createdAt || new Date())
-          }
-        });
-      }
-    }
-
-    // Create comment likes
-    if (commentLikes.length > 0) {
-      console.log(`Creating ${commentLikes.length} comment likes...`);
-      for (const commentLike of commentLikes) {
-        await prisma.commentLike.upsert({
-          where: {
-            userId_commentId: {
-              userId: commentLike.userId,
-              commentId: commentLike.commentId
-            }
-          },
-          update: {},
-          create: {
-            id: commentLike.id,
-            userId: commentLike.userId,
-            commentId: commentLike.commentId,
-            createdAt: new Date(commentLike.createdAt || new Date())
           }
         });
       }
