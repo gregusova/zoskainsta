@@ -8,6 +8,7 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface Comment {
   id: string;
@@ -24,13 +25,17 @@ interface PostProps {
   username: string;
   profilePicture?: string;
   imageUrl: string;
+  caption: string;
+  createdAt: string;
   likes?: number;
   comments?: number;
   isLiked?: boolean;
+  isBookmarked?: boolean;
 }
 
-export default function Post({ id, username, profilePicture, imageUrl, likes = 0, comments = 0, isLiked = false }: PostProps) {
+export default function Post({ id, username, profilePicture, imageUrl, caption, createdAt, likes = 0, comments = 0, isLiked = false, isBookmarked = false }: PostProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [isPostLiked, setIsPostLiked] = useState(isLiked);
   const [likeCount, setLikeCount] = useState(likes);
   const [commentCount, setCommentCount] = useState(comments);
@@ -113,7 +118,14 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
 
   return (
     <>
-      <Card sx={{ maxWidth: 600, mb: 3, mx: 'auto' }}>
+      <Card sx={{ 
+        width: '100%',
+        maxWidth: 600, 
+        mb: 3, 
+        mx: 'auto',
+        backgroundColor: 'white',
+        boxShadow: 1
+      }}>
         <CardHeader
           avatar={
             <Avatar 
@@ -132,11 +144,16 @@ export default function Post({ id, username, profilePicture, imageUrl, likes = 0
           component="img"
           image={imageUrl}
           alt="Post image"
+          onClick={() => router.push(`/prispevok/${id}`)}
           sx={{ 
             width: '100%',
+            maxWidth: '600px',
             height: 'auto',
-            objectFit: 'cover',
-            aspectRatio: '1/1'
+            objectFit: 'contain',
+            aspectRatio: '1',
+            margin: '0 auto',
+            backgroundColor: 'rgb(250, 250, 250)',
+            cursor: 'pointer'
           }}
         />
         <CardActions disableSpacing>

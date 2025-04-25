@@ -2,14 +2,10 @@
 
 // npx tsx prisma/seedData/dbInject.ts
 
-"use server";
-
 import fs from 'fs';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-
-type TransactionClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
 
 async function seed() {
   const seedData = JSON.parse(fs.readFileSync('prisma/seedData/seed-data.json', 'utf8'));
@@ -75,30 +71,44 @@ async function seed() {
       if (item.posts && item.posts.length > 0) {
         console.log(`Creating ${item.posts.length} posts for: ${item.name}`);
         for (const post of item.posts) {
-          await prisma.$transaction(async (tx: TransactionClient) => {
-            // Create the post
-            const createdPost = await tx.post.create({
-              data: {
-                id: post.id,
-                userId: item.id,
-                caption: post.caption,
-                tags: post.tags || [],
-                createdAt: new Date(post.createdAt || new Date()),
-                updatedAt: new Date(post.updatedAt)
+          // First create the post without imageUrl
+          const createdPost = await prisma.post.upsert({
+            where: { id: post.id },
+            update: {
+              caption: post.caption,
+              tags: post.tags || [],
+              updatedAt: new Date(post.updatedAt)
+            },
+            create: {
+              id: post.id,
+              userId: item.id,
+              caption: post.caption,
+              tags: post.tags || [],
+              imageUrl: post.imageUrl || '',
+              user: { connect: { id: item.id } },
+              createdAt: new Date(post.createdAt || new Date()),
+              updatedAt: new Date(post.updatedAt)
+            },
+          });
+
+          // Then add the image to the Image table
+          if (post.imageUrl) {
+            await prisma.images.upsert({
+              where: {
+                id: `${post.id}-image-0` // Create a predictable ID for the first image
+              },
+              update: {
+                imageUrl: post.imageUrl,
+              },
+              create: {
+                id: `${post.id}-image-0`,
+                postId: post.id,
+                imageUrl: post.imageUrl,
+                order: 0, // First image in order
+                createdAt: new Date(post.createdAt || new Date())
               }
             });
-
-            // Create the image if it exists
-            if (post.imageUrl) {
-              await tx.postImage.create({
-                data: {
-                  postId: createdPost.id,
-                  imageUrl: post.imageUrl,
-                  order: 0
-                }
-              });
-            }
-          });
+          }
         }
       }
     }

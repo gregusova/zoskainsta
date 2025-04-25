@@ -8,6 +8,8 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Image from 'next/image';
 import { createPost } from '@/app/(private)/pridat/actions';
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 export default function AddPostForm() {
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(null);
@@ -20,22 +22,28 @@ export default function AddPostForm() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        setError('File size too large. Maximum size is 10MB.');
+        return;
+      }
       setFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      setError(null);
     }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif']
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
     },
     maxFiles: 1,
-    multiple: false
+    multiple: false,
+    maxSize: MAX_FILE_SIZE
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,10 +71,17 @@ export default function AddPostForm() {
         setError(result.error || 'Failed to create post');
       }
     } catch (error) {
+      console.error('Upload error:', error);
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setPreview(null);
+    setFile(null);
+    setError(null);
   };
 
   return (
@@ -89,12 +104,22 @@ export default function AddPostForm() {
       >
         <input {...getInputProps()} />
         {preview ? (
-          <Box sx={{ position: 'relative', width: '100%', height: 300 }}>
+          <Box sx={{ 
+            position: 'relative',
+            width: '100%',
+            maxWidth: '600px',
+            margin: '0 auto',
+            aspectRatio: '1',
+          }}>
             <Image
               src={preview}
               alt="Preview"
               fill
-              style={{ objectFit: 'contain' }}
+              style={{ 
+                objectFit: 'contain',
+                width: '100%',
+                height: '100%',
+              }}
             />
           </Box>
         ) : (
@@ -104,6 +129,9 @@ export default function AddPostForm() {
               {isDragActive
                 ? 'Drop the image here'
                 : 'Drag and drop an image here, or click to select'}
+            </Typography>
+            <Typography variant="caption" color="textSecondary">
+              Maximum file size: 10MB
             </Typography>
           </Box>
         )}
@@ -148,10 +176,7 @@ export default function AddPostForm() {
         <Button
           variant="outlined"
           fullWidth
-          onClick={() => {
-            setPreview(null);
-            setFile(null);
-          }}
+          onClick={handleRemoveImage}
         >
           Remove Image
         </Button>

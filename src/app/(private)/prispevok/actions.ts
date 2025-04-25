@@ -43,7 +43,7 @@ export async function getPosts() {
 
   return posts.map((post) => ({
     ...post,
-    imageUrl: post.images?.[0]?.imageUrl || '',
+    imageUrl: post.imageUrl || post.images?.[0]?.imageUrl || '',
     likes: post.likes.length,
     comments: post.comments.length,
     isLiked: likedPostIds.has(post.id),
@@ -62,9 +62,6 @@ export async function createPost(formData: FormData) {
   if (!image) {
     throw new Error('No image provided');
   }
-
-  const bytes = await image.arrayBuffer();
-  const buffer = Buffer.from(bytes);
 
   // Upload image to Vercel Blob
   const form = new FormData();
@@ -89,6 +86,7 @@ export async function createPost(formData: FormData) {
     data: {
       caption,
       userId: session.user.id,
+      imageUrl: url, // Store the main image URL
       images: {
         create: {
           imageUrl: url,
@@ -247,4 +245,91 @@ export async function bookmarkPost(postId: string) {
   }
 
   revalidatePath('/prispevok');
+}
+
+export async function getPost(id: string) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      throw new Error('Not authenticated');
+    }
+
+    const post = await prisma.post.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+        likes: {
+          where: {
+            userId: session.user.id,
+          },
+          select: {
+            id: true,
+          },
+        },
+        bookmarks: {
+          where: {
+            userId: session.user.id,
+          },
+          select: {
+            id: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+        comments: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      return null;
+    }
+
+    return {
+      id: post.id,
+      username: post.user.name,
+      profilePicture: post.user.image,
+      imageUrl: post.imageUrl,
+      caption: post.caption,
+      createdAt: post.createdAt,
+      likes: post._count.likes,
+      isLiked: post.likes.length > 0,
+      isBookmarked: post.bookmarks.length > 0,
+      comments: post.comments.map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        user: {
+          name: comment.user.name,
+          image: comment.user.image,
+        },
+      })),
+      tags: post.tags || [],
+    };
+  } catch (error) {
+    console.error('Error fetching post:', error);
+    throw new Error('Failed to fetch post');
+  }
 } 

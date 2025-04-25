@@ -63,7 +63,7 @@ export async function getUserProfile() {
     profile: user.profile,
     posts: user.posts.map(post => ({
       ...post,
-      imageUrl: post.images[0]?.imageUrl || '',
+      imageUrl: post.imageUrl || post.images[0]?.imageUrl || '',
       likesCount: post.likes.length,
       commentsCount: post.comments.length,
     })),

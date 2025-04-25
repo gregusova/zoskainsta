@@ -2,7 +2,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
 /**
  * This script clears all data from the database tables.
@@ -12,6 +12,7 @@ async function clearDatabase() {
 
     try {
         // The order matters due to foreign key constraints
+
         // Start with tables that have foreign keys to other tables
         console.log('Deleting notification data...');
         await prisma.notification.deleteMany();
@@ -30,9 +31,6 @@ async function clearDatabase() {
 
         console.log('Deleting follow data...');
         await prisma.follow.deleteMany();
-
-        console.log('Deleting postImage data...');
-        await prisma.postImage.deleteMany();
 
         console.log('Deleting post data...');
         await prisma.post.deleteMany();
@@ -77,4 +75,4 @@ if (require.main === module) {
         });
 }
 
-export { clearDatabase }; 
+module.exports = { clearDatabase }; 
